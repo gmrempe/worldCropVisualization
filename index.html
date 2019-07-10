@@ -39,37 +39,38 @@
             const year = document.getElementById('year').selectedOptions[0].value;
 ;
 d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
+                // select one year of data
                 let filteredData = data.filter(function(d) {
                     if((year === d.Year) && (d.Value > 0)) {
                         return d
                     }
                 })
-                
+
+                // setup node structure with year as root
                 let dataMap = filteredData.reduce(function(map, node) {
                     map[node.Year] = { 'year': node.Year, 'parent': null };
                     map[node.Item] = { 'item': node.Item, 'parent': node.Year };
-                    map[node.Area + node.Item] = { 'area': node.Area, 'parent': node.Item };
-                    map[node.Value + node.Item] = { 'value': node.Value, 'parent': node.Item };
+                    map[node.Area + node.Item] = { 'area': node.Area, 'value': node.Value, 'parent': node.Item };
+                    // map[node.Value + node.Item] = { 'value': node.Value, 'parent': node.Item };
                     return map;
                 }, {});
-                    debugger
+                    
+                // put nodes into tree
                 let treeData = [];
-                filteredData.forEach(function (node) {
-                    // add to parent
+                Object.values(dataMap).forEach(function (node) {
                     let parent = dataMap[node.parent];
                     if (parent) {
-                        // create child array if it doesn't exist
-                        (node.parent || (node.parent = []))
-                            // add node to child array
+                        (parent.children || (parent.children = []))
                             .push(node);
                     } else {
-                        // parent is null or missing
                         treeData.push(node);
                     }
                 });
 
                 let root = treeData[0];
-                update(root);
+                // debugger
+                //re-render
+                // update(root);
             });
 
             // let csvjson = require('csvjson');
