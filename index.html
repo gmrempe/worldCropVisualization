@@ -8,10 +8,7 @@
 
     <title>World Crop Production Visualization</title>
     <script src="https://d3js.org/d3.v5.min.js"></script>
-
-
     <!-- <script src="./visual.js"></script> -->
-
 </head>
 
 <body>
@@ -21,7 +18,7 @@
             World Crop Production
         </header>
 
-        <label for='year'>Select a Year</label>
+        <label for='year'>Select Year</label>
     
         <select className="year" id='year'>
             <option value="2017" selected></option>
@@ -33,12 +30,14 @@
             <option value="1961"></option>
         </select>
     
-        <div id="chart"></div> 
+        <!-- <div id="chart"></div>  -->
    
+        <svg></svg>
+
         <script>
             const year = document.getElementById('year').selectedOptions[0].value;
-;
-d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
+            //grab data
+            d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
                 // select one year of data
                 let filteredData = data.filter(function(d) {
                     if((year === d.Year) && (d.Value > 0)) {
@@ -51,7 +50,6 @@ d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
                     map[node.Year] = { 'year': node.Year, 'parent': null };
                     map[node.Item] = { 'item': node.Item, 'parent': node.Year };
                     map[node.Area + node.Item] = { 'area': node.Area, 'value': node.Value, 'parent': node.Item };
-                    // map[node.Value + node.Item] = { 'value': node.Value, 'parent': node.Item };
                     return map;
                 }, {});
                     
@@ -72,6 +70,25 @@ d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
                 //re-render
                 // update(root);
             });
+
+            // function update(root) {
+
+            // }
+
+            //setup chart
+            let width = '100%';
+            let height = auto;
+            let radius = Math.min(width, height) / 2;
+            let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
+
+            let g = d3.select('svg')
+                  .attr('width', width)
+                  .attr('height', height)
+                .append('g')
+                  .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+
+            let partition = d3.partition()
+                  .size([2 * Math.pi / radius])
 
         </script>
 
