@@ -31,9 +31,9 @@
             <h1 style="font-size: 20px; margin-left: 3%;">Click on section to zoom in, Center to zoom out</h1>
             <a style="font-size: 15px; margin-left: 3%;" href="http://www.fao.org/faostat/en/#data/QC">Data from FAOSTAT</a>
 
-            <label for='year' style="position: absolute; left: 33%; top: 560px;">Select Year </label>
+            <label for='year' style="position: absolute; left: 430px; top: 570px;">Select Year </label>
             
-            <select className="year" id='year' style="position: absolute; left: 34%; top: 580px;">
+            <select className="year" id='year' onChange="redraw()" style="position: absolute; left: 445px; top: 590px;">
                     <option value="2017" selected>2017</option>
                     <option value="2010">2010</option>
                     <option value="2000">2000</option>
@@ -42,13 +42,18 @@
                     <option value="1970">1970</option>
                     <option value="1961">1961</option>
             </select>
-        </div>        
-        <svg style="margin-left: 3%;"></svg>
+        </div>
+
+        <svg id="chart"></svg>
 
     </body>
 
     <script>
+        function redraw() {
+        d3.selectAll('svg > *').remove();
+
         const year = document.getElementById('year').selectedOptions[0].value;
+
 
         //grab data
         d3.json("/FAOSTATData.json").then(function (data) {
@@ -113,14 +118,14 @@
                     }
                 });
         });
-
+    }
+        // labels as spokes
         function computeTextRotation(d) {
             let angle = (d.x0 + d.x1) / Math.PI * 90;
-
-            // return (angle < 120 || angle > 270) ? angle : angle + 180;  // labels as rims
-            return (angle < 180) ? angle - 90 : angle + 90;  // labels as spokes
+            return (angle < 180) ? angle - 90 : angle + 90;
         }
 
+        redraw()
 
     </script>
                                  
