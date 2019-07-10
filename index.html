@@ -53,16 +53,19 @@
             const radius = width / 2;
             const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1));
 
+            //place chart in center
             let g = d3.select('svg')
                 .attr('width', width)
                 .attr('height', height)
                 .append('g')
                 .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-                
+             
+            //give every node a value and sort
             const root = d3.hierarchy(treeData)
                 .sum(function(d) { return d.value})
                 .sort((a, b) => b.value - a.value)
                 
+            //calculate radians then add x0, y0, x1, y1 onto each node
             const partitionLayout = d3.partition()
                 .size([2 * Math.PI, radius]);
             
@@ -74,6 +77,7 @@
                 .innerRadius(d => d.y0)
                 .outerRadius(d => d.y1);
 
+            //make every node a g element
             g.selectAll('g')
                 .data(root.descendants())
                 .enter().append('g').attr("class", "node").append('path')
