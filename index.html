@@ -36,52 +36,54 @@
 
     <script>
         const year = document.getElementById('year').selectedOptions[0].value;
-        let width = '500';
-        let height = '500';
-        let radius = Math.min(width, height) / 2;
-        // let color = d3.scaleOrdinal(d3.schemeCategory20B);
-        // let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1));
-        
-        let g = d3.select('svg')
-        .attr('width', width)
-        .attr('height', height)
-        .append('g')
-        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-        
-        let partition = d3.partition()
-        .size([2 * Math.pi / radius]);
 
         //grab data
         d3.json("/FAOSTATData.json").then(function (data) {
             
             let treeData = {};
-
+            
             for(let i = 0; i < data.length; i++) {
                 if(data[i].year === year) {
                     treeData = data[i];
                 }
             }
-            debugger
-            let root = d3.hierarchy(treeData)
-            .sum(function(d) { return d.value});
             
-            partition(root);
-            let arc = d3.arc()
-            .startAngle(function (d) { return d.x0 })
-            .endAngle(function (d) { return d.x1 })
-            .innerRadius(function (d) { return d.y0 })
-            .outerRadius(function (d) { return d.y1 });
+            const width = 932;
+            const height = 932;
+            const radius = width / 2;
+            const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1));
+
+            let g = d3.select('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .append('g')
+                .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+                
+            const root = d3.hierarchy(treeData)
+                .sum(function(d) { return d.value})
+                .sort((a, b) => b.value - a.value)
+                
+            const partitionLayout = d3.partition()
+                .size([2 * Math.PI, radius]);
             
-            g.selectAll('path')
-            .data(root.descendants())
-            .enter()
-            .append('path')
-            .attr("display", function (d) { return d.depth ? null : "none"; })
-            .attr("d", arc)
-            .style('stroke', '#fff')
-            //   .style("fill", function (d) { return color((d.children ? d : d.parent).treeData.value); });
+            partitionLayout(root);
             
+            const arc = d3.arc()
+                .startAngle(d => d.x0)
+                .endAngle(d => d.x1)
+                .innerRadius(d => d.y0)
+                .outerRadius(d => d.y1);
+
+            g.selectAll('g')
+                .data(root.descendants())
+                .enter().append('g').attr("class", "node").append('path')
+                .attr("display", function (d) { return d.depth ? null : "none"; })
+                .attr("d", arc)
+                .style('stroke', '#fff')
+                .style("fill", function (d) { return color((d.children ? d : d.parent).data[Object.keys(d.data)[0]]); });
+
         });
+
     </script>
                                  
 </html>
