@@ -1,5 +1,9 @@
-.App-header {
+header {
     display: flex;
     justify-content: center;
+    size: 25px;
 }
 
+.App {
+    background-color: red;
+}
