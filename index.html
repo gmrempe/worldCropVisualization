@@ -1,114 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#000000" />
 
-    <title>World Crop Production Visualization</title>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <!-- <script src="./visual.js"></script> -->
-</head>
+        <title>World Crop Production Visualization</title>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
 
-<body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div className="App">
-        <header className="App-header">
-            World Crop Production
-        </header>
+    </head>
 
-        <label for='year'>Select Year</label>
-    
-        <select className="year" id='year'>
-            <option value="2017" selected></option>
-            <option value="2010"></option>
-            <option value="2000"></option>
-            <option value="1990"></option>
-            <option value="1980"></option>
-            <option value="1970"></option>
-            <option value="1961"></option>
-        </select>
-    
-        <!-- <div id="chart"></div>  -->
-   
+    <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div className="App">
+            <header className="App-header">
+                World Crop Production
+            </header>
+
+            <label for='year'>Select Year</label>
+        
+            <select className="year" id='year'>
+                <option value="2017" selected>2017</option>
+                <option value="2010">2010</option>
+                <option value="2000">2000</option>
+                <option value="1990">1990</option>
+                <option value="1980">1980</option>
+                <option value="1970">1970</option>
+                <option value="1961">1961</option>
+            </select>
+                    
         <svg></svg>
 
-        <script>
-            const year = document.getElementById('year').selectedOptions[0].value;
-            //grab data
-            const treeData = d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
-                // select one year of data
-                let filteredData = data.filter(function(d) {
-                    if((year === d.Year) && (d.Value > 0)) {
-                        return d
-                    }
-                })
+    </body>
 
-                // setup node structure with year as root
-                let dataMap = filteredData.reduce(function(map, node) {
-                    map[node.Year] = { 'year': node.Year, 'parent': null };
-                    map[node.Item] = { 'item': node.Item, 'parent': node.Year };
-                    map[node.Area + node.Item] = { 'area': node.Area, 'value': node.Value, 'parent': node.Item };
-                    return map;
-                }, {});
-                    
-                // put nodes into tree
-                const treeData = [];
-                Object.values(dataMap).forEach(function (node) {
-                    let parent = dataMap[node.parent];
-                    if (parent) {
-                        (parent.children || (parent.children = []))
-                            .push(node);
-                    } else {
-                        treeData.push(node);
-                    }
-                });
+    <script>
+        const year = document.getElementById('year').selectedOptions[0].value;
+        let width = '500';
+        let height = '500';
+        let radius = Math.min(width, height) / 2;
+        // let color = d3.scaleOrdinal(d3.schemeCategory20B);
+        // let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1));
+        
+        let g = d3.select('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .append('g')
+        .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
+        
+        let partition = d3.partition()
+        .size([2 * Math.pi / radius]);
 
-                return treeData;
-            }).then(function(treeData) {
+        //grab data
+        d3.json("/FAOSTATData.json").then(function (data) {
+            
+            let treeData = {};
 
-            //setup chart
-            let width = '932';
-            let height = '932';
-            let radius = Math.min(width, height) / 2;
-            // let color = d3.scaleOrdinal(d3.schemeCategory10);
-            let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData[0].children.length + 1));
-
-            let g = d3.select('svg')
-                  .attr('width', width)
-                  .attr('height', height)
-                .append('g')
-                  .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
-
-            let partition = d3.partition()
-                  .size([2 * Math.pi / radius]);
-
-            let root = d3.hierarchy(treeData[0])
-                  .sum(function(d) { return d.value});
-
+            for(let i = 0; i < data.length; i++) {
+                if(data[i].year === year) {
+                    treeData = data[i];
+                }
+            }
+            debugger
+            let root = d3.hierarchy(treeData)
+            .sum(function(d) { return d.value});
+            
             partition(root);
-                let arc = d3.arc()
-                    .startAngle(function (d) { return d.x0 })
-                    .endAngle(function (d) { return d.x1 })
-                    .innerRadius(function (d) { return d.y0 })
-                    .outerRadius(function (d) { return d.y1 });
-
-                    g.selectAll('path')
-                      .data(root.descendants())
-                      .enter()
-                    .append('path')
-                      .attr("display", function (d) { return d.depth ? null : "none"; })
-                      .attr("d", arc)
-                      .style('stroke', '#fff')
-                      .style("fill", function (d) { return color((d.children ? d : d.parent).data.value); });
-
-            });
-        </script>
-
-    </div>
- 
-
-</body>
-
+            let arc = d3.arc()
+            .startAngle(function (d) { return d.x0 })
+            .endAngle(function (d) { return d.x1 })
+            .innerRadius(function (d) { return d.y0 })
+            .outerRadius(function (d) { return d.y1 });
+            
+            g.selectAll('path')
+            .data(root.descendants())
+            .enter()
+            .append('path')
+            .attr("display", function (d) { return d.depth ? null : "none"; })
+            .attr("d", arc)
+            .style('stroke', '#fff')
+            //   .style("fill", function (d) { return color((d.children ? d : d.parent).treeData.value); });
+            
+        });
+    </script>
+                                 
 </html>
