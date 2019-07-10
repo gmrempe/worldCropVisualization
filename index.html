@@ -37,7 +37,7 @@
         <script>
             const year = document.getElementById('year').selectedOptions[0].value;
             //grab data
-            d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
+            const treeData = d3.csv("/FAOSTAT_data_7-9-2019.csv").then(function (data) {
                 // select one year of data
                 let filteredData = data.filter(function(d) {
                     if((year === d.Year) && (d.Value > 0)) {
@@ -54,7 +54,7 @@
                 }, {});
                     
                 // put nodes into tree
-                let treeData = [];
+                const treeData = [];
                 Object.values(dataMap).forEach(function (node) {
                     let parent = dataMap[node.parent];
                     if (parent) {
@@ -65,21 +65,15 @@
                     }
                 });
 
-                let root = treeData[0];
-                // debugger
-                //re-render
-                // update(root);
-            });
-
-            // function update(root) {
-
-            // }
+                return treeData;
+            }).then(function(treeData) {
 
             //setup chart
-            let width = '100%';
-            let height = auto;
+            let width = '932';
+            let height = '932';
             let radius = Math.min(width, height) / 2;
-            let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, data.children.length + 1));
+            // let color = d3.scaleOrdinal(d3.schemeCategory10);
+            let color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData[0].children.length + 1));
 
             let g = d3.select('svg')
                   .attr('width', width)
@@ -88,8 +82,28 @@
                   .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
 
             let partition = d3.partition()
-                  .size([2 * Math.pi / radius])
+                  .size([2 * Math.pi / radius]);
 
+            let root = d3.hierarchy(treeData[0])
+                  .sum(function(d) { return d.value});
+
+            partition(root);
+                let arc = d3.arc()
+                    .startAngle(function (d) { return d.x0 })
+                    .endAngle(function (d) { return d.x1 })
+                    .innerRadius(function (d) { return d.y0 })
+                    .outerRadius(function (d) { return d.y1 });
+
+                    g.selectAll('path')
+                      .data(root.descendants())
+                      .enter()
+                    .append('path')
+                      .attr("display", function (d) { return d.depth ? null : "none"; })
+                      .attr("d", arc)
+                      .style('stroke', '#fff')
+                      .style("fill", function (d) { return color((d.children ? d : d.parent).data.value); });
+
+            });
         </script>
 
     </div>
