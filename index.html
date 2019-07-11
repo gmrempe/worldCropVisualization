@@ -129,8 +129,7 @@
                     div.transition()
                         .duration(200)
                         .style("opacity", .9);
-                        // debugger
-                    div.html(d.data[Object.keys(d.data)[0]] + '<br/> Production <br/>' + d.data[Object.keys(d.data)[1]])
+                    div.html(d.data[Object.keys(d.data)[0]] + '<br/> Production <br/>' + d.value)
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                 })
