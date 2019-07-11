@@ -19,6 +19,20 @@
         body {
             font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
         }
+
+        div.tooltip {	
+            position: absolute;			
+            text-align: left;			
+            width: 60px;					
+            height: 42px;					
+            padding: 2px;				
+            font: 12px sans-serif;		
+            background: lightsteelblue;	
+            border: 0px;		
+            border-radius: 8px;			
+            pointer-events: none;			
+        }
+
     </style>
 
     <body>
@@ -45,7 +59,6 @@
 
         </div>
 
-        <!-- needs to be within flow of document -->
         <div id="chart" style="width: 100%; height: auto;">
             <svg style="font-size: 10px;"></svg>
         </div>
@@ -59,7 +72,9 @@
         const year = document.getElementById('year').selectedOptions[0].value;
         const chartDiv = document.getElementById('chart');
 
-
+        let div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
 
         //grab data
         d3.json("/FAOSTATData.json").then(function (data) {
@@ -109,7 +124,22 @@
                 .attr("display", function (d) { return d.depth ? null : "none"; })
                 .attr("d", arc)
                 .style('stroke', '#fff')
-                .style("fill", function (d) { return color((d.children ? d : d.parent).data[Object.keys(d.data)[0]]); });
+                .style("fill", function (d) { return color((d.children ? d : d.parent).data[Object.keys(d.data)[0]])})
+                .on("mouseover", function (d) {
+                    div.transition()
+                        .duration(200)
+                        .style("opacity", .9);
+                        // debugger
+                    div.html(d.data[Object.keys(d.data)[0]] + '<br/> Production <br/>' + d.data[Object.keys(d.data)[1]])
+                        .style("left", (d3.event.pageX) + "px")
+                        .style("top", (d3.event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (d) {
+                    div.transition()
+                        .duration(500)
+                        .style("opacity", 0);
+                });
+           
 
             g.selectAll(".node")
               .append("text")
