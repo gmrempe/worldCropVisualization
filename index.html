@@ -69,7 +69,8 @@
     <script>
         function redraw() {
         d3.selectAll('svg > *').remove();
-
+        d3.selectAll('tooltip').remove();
+        
         const year = document.getElementById('year').selectedOptions[0].value;
         const chartDiv = document.getElementById('chart');
 
