@@ -69,7 +69,7 @@
     <script>
         function draw() {
         d3.selectAll('svg > *').remove();
-        d3.selectAll('tooltip').remove();
+        // d3.selectAll('tooltip').remove();
 
         const year = document.getElementById('year').selectedOptions[0].value;
         const chartDiv = document.getElementById('chart');
@@ -90,11 +90,13 @@
             
             const width = chartDiv.clientWidth;
             const height = chartDiv.clientWidth;
-            const radius = width / 2;
-            const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1)); 
+            const radius = (width / 2);
+            const x = d3.scaleLinear().range([0, 2 * Math.PI]);  //radians
+            const y = d3.scalePow().range([0, radius]).exponent(0.8);
+            const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length)); 
 
             //place chart in center of svg element
-            let g = d3.select('svg')
+            let svg = d3.select('svg')
                 .attr("viewBox", [0,0,width,width])
               .append('g')
                 .attr('transform', 'translate(' + width / 2 + ',' + height / 2 + ')');
@@ -106,18 +108,18 @@
                 
             //calculate radians then add x0, y0, x1, y1 onto each node
             const partitionLayout = d3.partition()
-                .size([2 * Math.PI, radius]);
+                // .size([2 * Math.PI, radius]);  do this on line 94
             
             partitionLayout(root);
-            
+                
             const arc = d3.arc()
-                .startAngle(d => d.x0)
-                .endAngle(d => d.x1)
-                .innerRadius(d => d.y0)
-                .outerRadius(d => d.y1);
-
+                .startAngle( d => Math.max(0, Math.min(2 * Math.PI, x(d.x0))))
+                .endAngle(d => Math.max(0, Math.min(2 * Math.PI, x(d.x1))))
+                .innerRadius(d => Math.max(0, y(d.y0)))
+                .outerRadius(d => Math.max(0, y(d.y1)));
+                
             //make every node a g element
-            g.selectAll('g')
+            let path = svg.selectAll('g')
                 .data(root.descendants())
               .enter().append('g').attr("class", "node").append('path')
                 .attr("display", function (d) { return d.depth ? null : "none"; })
@@ -142,7 +144,7 @@
                         .style('top', (d3.event.pageY + 10) + 'px');
             });
 
-            g.selectAll(".node")
+            svg.selectAll(".node")
               .append("text")
                 .attr("transform", function (d) {
                     return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
