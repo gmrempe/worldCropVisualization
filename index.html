@@ -91,7 +91,7 @@
             const width = chartDiv.clientWidth;
             const height = chartDiv.clientWidth;
             const radius = width / 2;
-            const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1));
+            const color = d3.scaleOrdinal(d3.quantize(d3.interpolateRainbow, treeData.children.length + 1)); 
 
             //place chart in center of svg element
             let g = d3.select('svg')
@@ -124,22 +124,20 @@
                 .attr("d", arc)
                 .style('stroke', '#fff')
                 .style("fill", function (d) { return color((d.children ? d : d.parent).data[Object.keys(d.data)[0]])})
-                .on("mouseover", function (d) {   //tooltip
+              .on("mouseover", function (d) {   //tooltip
                     div.transition()
                         .duration(200)
                         .style("opacity", .9);
                         let leaf = '';
                     if(d.parent && !d.parent.data.year) {leaf = '<br/>' + d.parent.data.item}
-                    div.html(d.data[Object.keys(d.data)[0]] + leaf + '<br/> Production <br/>' + d.value)
+                    div.html(d.data[Object.keys(d.data)[0]] + leaf + '<br/> Production <br/>' + d.value + '<br/>' + (d.value / d.parent.value * 100).toFixed(2) + '%')
                         .style("left", (d3.event.pageX) + "px")
-                        .style("top", (d3.event.pageY) + "px");
-                })
-                .on("mouseout", function (d) {
+                        .style("top", (d3.event.pageY) + "px")})
+              .on("mouseout", function (d) {
                     div.transition()
                         .duration(500)
                         .style("opacity", 0);
-                });
-           
+              });
 
             g.selectAll(".node")
               .append("text")
@@ -154,6 +152,7 @@
                         return d.parent ? d.data[Object.keys(d.data)[0]] : "";
                     }
                 });
+
         });
     }
         // labels as spokes
@@ -165,7 +164,6 @@
         draw()
 
         window.addEventListener("resize", draw);
-        //zoomable sunburst inspired by Mike Bostock
     </script>
                                  
 </html>
