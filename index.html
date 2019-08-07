@@ -28,7 +28,7 @@
             height: auto;					
             padding: 2px;				
             font: 12px sans-serif;		
-            background: #42c2f5;	
+            background: #fff;	
             border: 1px solid #000;		
             border-radius:5px;			
             pointer-events: none;			
@@ -85,7 +85,8 @@
 
         //grab data
         d3.json("/FAOSTATData.json").then(function (data) {
-            
+            d3.selectAll('svg > *').remove();
+
             for(let i = 0; i < data.length; i++) {
                 if(data[i].year === year) {
                     treeData = data[i];
@@ -118,11 +119,11 @@
                 .outerRadius(d => Math.max(0, y(d.y1)));
 
             //make every node a g element
-            let path = svg.selectAll('g')
+            let g = svg.selectAll('g')
                 .data(root.descendants())
               .enter().append('g')
-                .attr("class", "node")  //for text
-              .append('path')
+                // .attr("class", "node")  //for text
+            let path = g.append('path')
                 .attr("d", arc)
                 .style('stroke', '#fff')
                 .style("fill", function (d) { 
@@ -131,7 +132,24 @@
                     } else {
                         return color((d.children ? d : d.parent).data[Object.keys(d.data)[0]])}
                     })
-              .on("click", function (d) {       //zoom
+
+              let labels = g.append("text")
+                    .attr("transform", function (d) {
+                        return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
+                    })
+                    .attr("dx", "-20")
+                    .attr("text-anchor", "middle")
+                    .attr("dy", ".35em")
+                    .text(function (d) { 
+                        let text = d.data[Object.keys(d.data)[0]];
+                        if (d.x1 - d.x0 > 0.007) {
+                            return d.parent ? text : '';
+                        }
+                        // return d.parent ? text.attr("opacity", 0) : '';
+                })
+
+              path.on("click", function (d) {       //zoom
+                labels.transition().attr("opacity", 0);
                 svg.transition()
                     .duration(1200)
                     .tween("scale", function () {
@@ -142,7 +160,22 @@
                     })
                     .selectAll("path")
                     .attrTween("d", function (d) { return function () { return arc(d); }; })
-                })
+                  .each(function (e, i) {
+                  // check if the animated element's data e lies within the visible angle span given in d
+                  if (e.x0 >= d.x0 && e.x0 < (d.x0 + d.x1)) {
+                      // get a selection of the associated text element
+                    //   debugger
+                      let arcText = d3.select(this.parentNode).select("text");
+                      // fade in the text element and recalculate positions
+                      arcText.transition().duration(1200)
+                          .attr("opacity", 1)
+                          .attr("transform", function () { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"})
+                        //   .attr("x", function (d) { return y(d.y); });
+                    // labels.transition().duration(1200)
+                    // .attr("opacity", 1)
+                    // .attr("transform", function () { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"})
+                }
+              })})
               .on("mouseover", function (d) {   //tooltip
                     div.transition()
                         .duration(200)
@@ -166,21 +199,6 @@
                     div.style('left', (d3.event.pageX + 10) + 'px')
                         .style('top', (d3.event.pageY + 10) + 'px');
                 });
-            
-                let label = svg.selectAll(".node")
-                    // debugger
-                    .append("text")
-                    .attr("transform", function (d) {
-                        return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
-                    })
-                    .attr("dx", "-20")
-                    .attr("text-anchor", "middle")
-                    .attr("dy", ".35em")
-                    .text(function (d) { 
-                        if (d.x1 - d.x0 > 0.007) {
-                            return d.parent ? d.data[Object.keys(d.data)[0]] : "";
-                        }
-                    });
         });
 
         // labels as spokes
