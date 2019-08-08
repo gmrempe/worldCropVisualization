@@ -106,9 +106,8 @@
                 .sum(function(d) { return d.value})
                 .sort((a, b) => b.value - a.value)
                 
-            //calculate radians then add x0, y0, x1, y1 onto each node
+            //add x0, y0, x1, y1 onto each node
             const partitionLayout = d3.partition()
-                // .size([2 * Math.PI, radius]);  do this on line 94
             
             partitionLayout(root);
                 
@@ -140,13 +139,15 @@
                     .attr("dx", "-20")
                     .attr("text-anchor", "middle")
                     .attr("dy", ".35em")
+                    .attr("opacity", 0)
                     .text(function (d) { 
                         let text = d.data[Object.keys(d.data)[0]];
                         if (d.x1 - d.x0 > 0.007) {
-                            return d.parent ? text : '';
+                            this.setAttribute("opacity", "1")
+                            return d.parent? text : '';
                         }
-                        // return d.parent ? text.attr("opacity", 0) : '';
-                })
+                        return text;
+                    })
 
               path.on("click", function (d) {       //zoom
                 labels.transition().attr("opacity", 0);
@@ -160,20 +161,17 @@
                     })
                     .selectAll("path")
                     .attrTween("d", function (d) { return function () { return arc(d); }; })
-                  .each(function (e, i) {
-                  // check if the animated element's data e lies within the visible angle span given in d
+                  .on("end", function (e, i) {
+                  // check if labels are in selected wedge
                   if (e.x0 >= d.x0 && e.x0 < (d.x0 + d.x1)) {
-                      // get a selection of the associated text element
-                    //   debugger
-                      let arcText = d3.select(this.parentNode).select("text");
-                      // fade in the text element and recalculate positions
-                      arcText.transition().duration(1200)
-                          .attr("opacity", 1)
-                          .attr("transform", function () { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"})
-                        //   .attr("x", function (d) { return y(d.y); });
-                    // labels.transition().duration(1200)
-                    // .attr("opacity", 1)
-                    // .attr("transform", function () { return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")"})
+                      let text = d3.select(this.parentNode).select("text");
+
+                    // bring labels in and recalculate positions
+                    if (e.x1 - e.x0 > 0.007) {
+                      text.transition()
+                          .attr("opacity", 1).duration(1200)
+                          .attr("transform", function () { return "translate(" + arc.centroid(e) + ")rotate(" + computeTextRotation(e) + ")"})
+                    }
                 }
               })})
               .on("mouseover", function (d) {   //tooltip
