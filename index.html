@@ -8,6 +8,7 @@
 
         <title>World Crop Production Visualization</title>
         <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="FAOSTATData.json"></script>
 
     </head>
 
@@ -82,7 +83,7 @@
             .style("opacity", 0);
 
         //grab data
-        d3.json("/FAOSTATData.json").then(function (data) {
+        d3.json("FAOSTATData.json").then(function (data) {
             d3.selectAll('svg > *').remove();
 
             for(let i = 0; i < data.length; i++) {
@@ -194,7 +195,10 @@
                     div.style('left', (d3.event.pageX + 10) + 'px')
                         .style('top', (d3.event.pageY + 10) + 'px');
                 });
-        });
+
+        }
+        )
+        ;
 
         // labels as spokes
         function computeTextRotation(d) {
