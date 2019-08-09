@@ -121,7 +121,6 @@
             let g = svg.selectAll('g')
                 .data(root.descendants())
               .enter().append('g')
-                // .attr("class", "node")  //for text
             let path = g.append('path')
                 .attr("d", arc)
                 .style('stroke', '#fff')
@@ -136,21 +135,22 @@
                     .attr("transform", function (d) {
                         return "translate(" + arc.centroid(d) + ")rotate(" + computeTextRotation(d) + ")";
                     })
-                    .attr("dx", "-20")
+                    .attr("pointer-events", "none")
                     .attr("text-anchor", "middle")
                     .attr("dy", ".35em")
-                    .attr("opacity", 0)
+                    .style("opacity", 0)
                     .text(function (d) { 
                         let text = d.data[Object.keys(d.data)[0]];
-                        if (d.x1 - d.x0 > 0.007) {
-                            this.setAttribute("opacity", "1")
+                        if (d.x1 - d.x0 >= 0.007) {
+                            d3.select(this)
+                                .style("opacity", 1)
                             return d.parent? text : '';
                         }
                         return text;
                     })
 
               path.on("click", function (d) {       //zoom
-                labels.transition().attr("opacity", 0);
+                labels.transition().style("opacity", 0);
                 svg.transition()
                     .duration(1200)
                     .tween("scale", function () {
@@ -163,13 +163,12 @@
                     .attrTween("d", function (d) { return function () { return arc(d); }; })
                   .on("end", function (e, i) {
                   // check if labels are in selected wedge
-                  if (e.x0 >= d.x0 && e.x0 < (d.x0 + d.x1)) {
-                      let text = d3.select(this.parentNode).select("text");
-
+                  if ((e.x0 >= d.x0) && e.x1 <= d.x1) {
+                    let label = d3.select(this.parentNode).select("text");
                     // bring labels in and recalculate positions
-                    if (e.x1 - e.x0 > 0.007) {
-                      text.transition()
-                          .attr("opacity", 1).duration(1200)
+                    if (e.x1 - e.x0 > ((d.x1 - d.x0) * .006)) {
+                      label.transition()
+                          .style("opacity", 1).duration(1200)
                           .attr("transform", function () { return "translate(" + arc.centroid(e) + ")rotate(" + computeTextRotation(e) + ")"})
                     }
                 }
