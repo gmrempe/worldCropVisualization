@@ -200,7 +200,7 @@
                     })
                     .selectAll("path")
                     .attrTween("d", function (d) { return function () { return arc(d); }; })
-                  .on("end", function (e, i, n) {
+                  .on("end", function (e) {
                   // check if labels are in selected wedge
                   if ((e.x0 >= d.x0) && e.x1 <= d.x1) {
                     let label = d3.select(this.parentNode).select("text");
@@ -242,7 +242,7 @@
 
         // calculate angle then adjust to spoke
         function computeTextRotation(d, e) {
-            if (e === undefined) e = {x0 : 0, x1 : 0};
+            if (e === undefined) e = {x0 : 0};
             let angle = x(d.x0 + d.x1 - e.x0) / Math.PI * 90;
             return (angle < 180) ? angle - 90 : angle + 90;
         }
