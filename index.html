@@ -27,6 +27,7 @@
             font-family: "Montserrat", "Helvetica Neue", Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
+            align-items: center;
             height: 100%;
         }
 
@@ -136,8 +137,8 @@
             <div class="loading"></div>
         </div>
 
-        <div id="chart" style="width: 100%; height: auto;">
-            <svg style="font-size: 10px;"></svg>
+        <div id="chart" style="width: 750px; height: auto;">
+            <svg style="font-size: 12px;"></svg>
         </div>
 
         <footer class="nav-container">
@@ -165,9 +166,15 @@
             d3.selectAll('svg > *').remove();
 
             const year = document.getElementById('year').selectedOptions[0].value;
-            const chartDiv = document.getElementById('chart');
-            const width = chartDiv.clientWidth;
-            const height = chartDiv.clientWidth;
+            // const chartDiv = document.getElementById('chart');
+            // if(chartDiv.clientWidth > 750) {
+            //     width = 750;
+            //     // chartDiv.style.width = '750px';
+            // } else {
+            //     width = chartDiv.clientWidth;
+            // }
+            const width = 750;
+            const height = width;
             const radius = (width / 2);
             const x = d3.scaleLinear().range([0, 2 * Math.PI]);  //radians
             const y = d3.scalePow().range([0, radius]).exponent(0.8);
