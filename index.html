@@ -29,25 +29,15 @@
             flex-direction: column;
             align-items: center;
             height: 100%;
+            background-color: whitesmoke;
         }
-
-        /* .nav-container {
-            position: absolute;
-            z-index: -1;
-            height: 100%;
-            width: 100%;
-            display: flex;
-            align-items: flex-end;
-        } */
 
         nav {
             margin-top: auto;
             height: 50px;
             width: 100%;
             padding-top: 40px;
-            /* z-index: -1; */
             display: flex;
-            /* flex-shrink: 0; */
             flex-direction: row;
             justify-content: center;
         }   
@@ -138,7 +128,7 @@
         </div>
 
         <div id="chart" style="width: 750px; height: auto;">
-            <svg style="font-size: 12px;"></svg>
+            <svg style="font-size: 11px;"></svg>
         </div>
 
         <footer class="nav-container">
@@ -166,13 +156,6 @@
             d3.selectAll('svg > *').remove();
 
             const year = document.getElementById('year').selectedOptions[0].value;
-            // const chartDiv = document.getElementById('chart');
-            // if(chartDiv.clientWidth > 750) {
-            //     width = 750;
-            //     // chartDiv.style.width = '750px';
-            // } else {
-            //     width = chartDiv.clientWidth;
-            // }
             const width = 750;
             const height = width;
             const radius = (width / 2);
@@ -311,13 +294,16 @@
                         .style("opacity", 0.9);
                         let leaf = '';
                         let percent = '';
+                        let value = '';
                     if (d.parent && !d.parent.data.year) {
                         leaf = '<br/>' + d.parent.data.item;
-                        percent = '<br/>' + (d.value / d.parent.value * 100).toFixed(2) + '%';
+                        percent = '<br/>' + (d.value / d.parent.value * 100).toFixed(2) + '% of Production';
                     } else if (d.parent) {
-                        percent = '<br/>' + (d.value / d.parent.value * 100).toFixed(2) + '%';
+                        percent = '<br/>' + (d.value / d.parent.value * 100).toFixed(2) + '% of Production';
+                    } else {
+                        percent = '<br/> Total Production';
                     }
-                    div.html(d.data[Object.keys(d.data)[0]] + leaf + '<br/>' + d.value + percent)
+                    div.html(d.data[Object.keys(d.data)[0]] + leaf + '<br/>' + adjustLargeNumbers(d.value) + percent)
                         .style("left", (d3.event.pageX + 10) + "px")
                         .style("top", (d3.event.pageY + 10) + "px")})
                 .on("mouseout", function (d) {
@@ -336,6 +322,25 @@
                 if (e === undefined) e = {x0 : 0};
                 let angle = x(d.x0 + d.x1 - e.x0) / Math.PI * 90;
                 return (angle < 180) ? angle - 90 : angle + 90;
+            }
+
+            function adjustLargeNumbers(num) {
+                let n = String(num);
+                let result;
+                let adjusted;
+                if(n.length > 9) {
+                    adjusted = n / 1000000000;
+                    result = `${adjusted.toFixed(2)} Billion Tonnes`;
+                } else if (n.length > 6) {
+                    adjusted = n / 1000000;
+                    result = `${adjusted.toFixed(2)} Million Tonnes`;
+                } else if (n.length > 3) {
+                    adjusted = n / 1000;
+                    result = `${adjusted.toFixed(2)} Thousand Tonnes`;
+                } else {
+                    result = `${n} Tonnes`;
+                }
+                return result;
             }
         }
 
