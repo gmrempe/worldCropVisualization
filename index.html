@@ -64,7 +64,7 @@
 
         .loading {
             z-index: -2;
-            border: 16px solid #f3f3f3;
+            border: 16px solid #ebebeb;
             border-top: 16px solid #7c807d;
             border-radius: 50%;
             width: 120px;
@@ -201,8 +201,6 @@
                     }
 
                     if (d.children) {
-
-                        // distribute those colors to the child nodes in sorted order.
                         d.children.map(function (child, i) {
                             return { value: child.value, idx: i };
                         }).sort(function (a, b) {
